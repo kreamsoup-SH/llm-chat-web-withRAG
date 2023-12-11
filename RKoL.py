@@ -7,7 +7,7 @@ Adaptation of the KoLLaVA model for real-time use
 Imports packages
 '''
 import cv2
-import time
+import time, torch
 from transformers import AutoProcessor, AutoModelForCausalLM, pipeline, BitsAndBytesConfig
 
 '''
