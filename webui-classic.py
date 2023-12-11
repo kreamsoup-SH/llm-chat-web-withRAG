@@ -37,7 +37,7 @@ def get_tokenizer_model():
     model = AutoModelForCausalLM.from_pretrained(model_name,
             cache_dir='./model/', token=auth_token,
             quantization_config=quantization_config,
-            rope_scaling={"type":"dynamic", "factor":2},
+            # rope_scaling={"type":"dynamic", "factor":2},
             max_memory=f'{int(torch.cuda.mem_get_info()[0]/1024**3)-2}GB'
     )
     return tokenizer, model
@@ -62,18 +62,20 @@ if prompt:
 if st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         # model inference
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+        prompt_ = f"[INST] <<SYS>>\nYou are a helpful assisstant.\n<</SYS>>\n\n{prompt} [/INST]"
+        inputs = tokenizer(prompt_, return_tensors="pt").to(model.device)
         streamer = TextStreamer(tokenizer=tokenizer, skip_prompt=True, skip_special_tokens=True)
         output = model.generate(**inputs, streamer=streamer,
                         use_cache=True, max_new_tokens=100)
         output_text = tokenizer.decode(output[0],skip_special_tokens=True)
-        
+        output_text_split = output_text.split(prompt_)[1]
+
         placeholder = st.empty()
         full_response = ""
-        for item in output_text:
+        for item in output_text_split:
             full_response += item
             placeholder.markdown(full_response)
         placeholder.markdown(full_response)
-    st.session_state.messages.append({"role": "assistant", "content": output_text})
+    st.session_state.messages.append({"role": "assistant", "content": output_text_split})
 
 
