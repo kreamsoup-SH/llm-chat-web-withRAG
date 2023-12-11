@@ -4,10 +4,10 @@ Adaptation of the KoLLaVA model for real-time use
 '''
 
 import cv2
-from transformers import AutoProcessor, AutoModelForCausalLM
+# from transformers import AutoProcessor, AutoModelForCausalLM
 
-processor = AutoProcessor.from_pretrained("tabtoyou/KoLLaVA-v1.5-Synatra-7b")
-model = AutoModelForCausalLM.from_pretrained("tabtoyou/KoLLaVA-v1.5-Synatra-7b")
+# processor = AutoProcessor.from_pretrained("tabtoyou/KoLLaVA-v1.5-Synatra-7b")
+# model = AutoModelForCausalLM.from_pretrained("tabtoyou/KoLLaVA-v1.5-Synatra-7b")
 
 
 def camera(w:int = 640, h:int = 480):
@@ -23,3 +23,5 @@ def camera(w:int = 640, h:int = 480):
                 break
     cap.release()
     cv2.destroyAllWindows()
+
+camera(640,480)
