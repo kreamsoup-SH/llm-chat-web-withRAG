@@ -18,7 +18,11 @@ st.divider()
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+
+def clear_chat_history():
+    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+st.button('Clear Chat History', on_click=clear_chat_history)
 
 # Load Tokenizer and Model
 @st.cache_resource
@@ -39,7 +43,6 @@ def get_tokenizer_model():
     return tokenizer, model
 
 tokenizer, model = get_tokenizer_model()
-print("Model loaded")
 
 # prompt ="### User:How many majors in SEOULTECH?### Assistant:"
 # Display chat messages from history on app rerun
@@ -48,9 +51,8 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 prompt = st.chat_input('User: ')
-
 if prompt:
-    # update chat history
+    # update(append) chat history
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
@@ -74,6 +76,4 @@ if st.session_state.messages[-1]["role"] == "user":
         placeholder.markdown(full_response)
     st.session_state.messages.append({"role": "assistant", "content": output_text})
 
-def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
-st.button('Clear Chat History', on_click=clear_chat_history)
+
