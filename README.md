@@ -22,8 +22,9 @@ runtime\python.exe -m streamlit run webui.py
 ```
 
 # To-do
-- [ ] complete webui-classic.py
-- [ ] complete webui-RAG.py
+- [ ] Redesign To-do list
+- [ ] complete webui-classic.py : 70%
+- [ ] complete webui-RAG.py : 50%
 - [ ] create batch file for windows user
 - [ ] apply whisper to use STT
 - [ ] apply ViTS to use TTS
