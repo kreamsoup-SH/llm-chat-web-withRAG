@@ -7,21 +7,21 @@ from transformers import (
 )
 
 # Title
-st.title('LLAMA Demo')
+st.title('LLAMA Index Demo')
 st.divider()
 
 # Load Tokenizer and Model
 st.title('Model name and auth token')
-model_name = st.text_input('Enter your Hugging Face model name', value="meta-llama/Llama-2-7b-chat-hf")
+model_name = st.text_input('Enter your Hugging Face model name', value="beomi/llama-2-ko-7b")
 auth_token = st.text_input('Enter your Hugging Face auth token', value="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")
 st.divider()
 
 # Initialize chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+    st.session_state.messages = [{"role": "assistant", "content": "대화를 시작하기 위해 메시지를 입력하세요."}]
 
 def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+    st.session_state.messages = [{"role": "assistant", "content": "대화를 시작하기 위해 메시지를 입력하세요."}]
 st.button('Clear Chat History', on_click=clear_chat_history)
 
 # Load Tokenizer and Model
@@ -33,11 +33,11 @@ def get_tokenizer_model():
     quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type='nf4',
+    bnb_4bit_compute_dtype=torch.float16,
     )
     model = AutoModelForCausalLM.from_pretrained(model_name,
             cache_dir='./model/', token=auth_token,
             quantization_config=quantization_config,
-            # rope_scaling={"type":"dynamic", "factor":2},
             max_memory=f'{int(torch.cuda.mem_get_info()[0]/1024**3)-2}GB'
     )
     return tokenizer, model
@@ -62,11 +62,12 @@ if prompt:
 if st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         # model inference
-        prompt_ = f"[INST] <<SYS>>\nYou are a helpful assisstant.\n<</SYS>>\n\n{prompt} [/INST]"
+        # prompt_ = f"[INST] <<SYS>>\nYou are a helpful assisstant.\n<</SYS>>\n\n{prompt} [/INST]"
+        prompt_ = f"<s>{prompt}</s>"
         inputs = tokenizer(prompt_, return_tensors="pt").to(model.device)
         streamer = TextStreamer(tokenizer=tokenizer, skip_prompt=True, skip_special_tokens=True)
         output = model.generate(**inputs, streamer=streamer,
-                        use_cache=True, max_new_tokens=100)
+                        use_cache=True, max_new_tokens=300)
         output_text = tokenizer.decode(output[0],skip_special_tokens=True)
         output_text_split = output_text.split(prompt_)[1]
 
