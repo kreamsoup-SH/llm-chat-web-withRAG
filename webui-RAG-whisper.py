@@ -6,27 +6,48 @@ from transformers import (
     TextStreamer,
 )
 import whisper
+import os
 
 ############ config ############
+# general config
 whisper_model_names=["tiny", "base", "small", "medium", "large"]
+data_root_path = os.path.join('.','data')
+file_types = ['pdf','png','jpg','wav']
+for filetype in file_types:
+    if not os.path.exists(os.path.join(data_root_path,filetype)):
+        os.makedirs(os.path.join(data_root_path,filetype))
+
+# streamlit config
+## Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+
+
+
+
 
 ############ User Interface ############
 # Title
 st.title('LLAMA RAG Demo')
 st.divider()
 
-# Configs
 st.title('Model name and auth token')
+# Configs
 model_name = st.text_input('Enter your Hugging Face model name', value="meta-llama/Llama-2-7b-chat-hf")
 auth_token = st.text_input('Enter your Hugging Face auth token', value="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")
 system_prompt = st.text_area('Enter your system prompt', value="You are a helpful, respectful and honest assistant.")
 whisper_model_name = st.selectbox('Select your whisper model',options=whisper_model_names)
 use_cuda = st.checkbox('Use CUDA', value=True)
+isfile = False
+## File uploader
+from streamlit import file_uploader
+uploadedfile = file_uploader("Choose a \"PDF\" file (now support only pdf)")
+if uploadedfile is not None:
+    isfile = True
+    with open(os.path.join(data_root_path,'pdf',uploadedfile.name),"wb") as f:
+        f.write(uploadedfile.getbuffer())
+    st.success("File uploaded successfully : {}".format(uploadedfile.name))
 st.divider()
-
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
 
 
 
@@ -88,7 +109,10 @@ def get_rag_queryengine(_tokenizer, model, system_prompt):
     from llama_index import VectorStoreIndex, download_loader
     PyMuPDFReader = download_loader("PyMuPDFReader")
     loader = PyMuPDFReader()
-    documents = loader.load_data(file_path='./data/SNUST_international_guidelines.pdf', metadata=True)
+    for file in os.listdir(os.path.join(data_root_path,'pdf')):
+        # !!! This is not a good way to load data. I will fix this later
+        # this makes the only last file in the folder to be loaded
+        documents = loader.load_data(file_path=os.path.join(data_root_path,'pdf',file), metadata=True)
     index = VectorStoreIndex.from_documents(documents)
     query_engine = index.as_query_engine()
     return query_engine
@@ -111,7 +135,8 @@ def whisper_stt(*,model, device, audio_path)->str:
 ############ main ############
 # Load Tokenizer and Model, RAG engine
 tokenizer, model = get_tokenizer_model()
-engine = get_rag_queryengine(tokenizer, model, system_prompt)
+if isfile:
+    engine = get_rag_queryengine(tokenizer, model, system_prompt)
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -128,12 +153,20 @@ if prompt:
 # Here... text streamer does not work as well as I intended with streamlit
 # I will try to fix this later
 if st.session_state.messages[-1]["role"] == "user":
-    with st.chat_message("assistant"):
-        # model inference
-        output_text = engine.query(prompt)
+    if isfile:
+        with st.chat_message("assistant"):
+            # model inference
+            output_text = engine.query(prompt)
 
-        placeholder = st.empty()
-        placeholder.markdown(output_text)
-    st.session_state.messages.append({"role": "assistant", "content": output_text})
+            placeholder = st.empty()
+            placeholder.markdown(output_text)
+        st.session_state.messages.append({"role": "assistant", "content": output_text})
 
+    else:
+        with st.chat_message("assistant"):
+            # model inference
+            output_text = "Please upload a file first"
+            placeholder = st.empty()
+            placeholder.markdown(output_text)
+        st.session_state.messages.append({"role": "assistant", "content": output_text})
 
