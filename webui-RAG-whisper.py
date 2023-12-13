@@ -7,17 +7,20 @@ from transformers import (
 )
 import whisper
 
+############ config ############
+whisper_model_names=["tiny", "base", "small", "medium", "large"]
+
+############ User Interface ############
 # Title
 st.title('LLAMA RAG Demo')
 st.divider()
 
-# Load Tokenizer and Model
+# Configs
 st.title('Model name and auth token')
 model_name = st.text_input('Enter your Hugging Face model name', value="meta-llama/Llama-2-7b-chat-hf")
 auth_token = st.text_input('Enter your Hugging Face auth token', value="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")
 system_prompt = st.text_area('Enter your system prompt', value="You are a helpful, respectful and honest assistant.")
-choices=["tiny", "base", "small", "medium", "large"]
-whisper_model_name = st.selectbox('Select your whisper model', choices=choices, index=2)
+whisper_model_name = st.selectbox('Select your whisper model',options=whisper_model_names)
 use_cuda = st.checkbox('Use CUDA', value=True)
 st.divider()
 
@@ -25,6 +28,11 @@ st.divider()
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
 
+
+
+
+
+############ function ############
 def clear_chat_history():
     st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
 st.button('Clear Chat History', on_click=clear_chat_history)
@@ -38,6 +46,7 @@ def get_tokenizer_model():
     quantization_config = BitsAndBytesConfig(
     load_in_4bit=True,
     bnb_4bit_quant_type='nf4',
+    bnb_4bit_compute_dtype=torch.float16,
     )
     model = AutoModelForCausalLM.from_pretrained(model_name,
             cache_dir='./model/', token=auth_token,
@@ -95,9 +104,14 @@ def whisper_stt(*,model, device, audio_path)->str:
     # return result : str list
     return result["text"]
 
+
+
+
+
+############ main ############
+# Load Tokenizer and Model, RAG engine
 tokenizer, model = get_tokenizer_model()
 engine = get_rag_queryengine(tokenizer, model, system_prompt)
-
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
