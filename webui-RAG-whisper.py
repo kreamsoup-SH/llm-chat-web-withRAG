@@ -56,6 +56,9 @@ st.divider()
 ############ function ############
 def clear_chat_history():
     st.session_state.messages = [{"role": "assistant", "content": "Type a message to start a conversation"}]
+    for file in os.listdir(os.path.join(data_root_path,'pdf')):
+        os.remove(os.path.join(data_root_path,'pdf',file))
+    
 st.button('Clear Chat History', on_click=clear_chat_history)
 
 # Load Tokenizer and Model
