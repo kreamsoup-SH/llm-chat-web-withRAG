@@ -1,5 +1,5 @@
 # LLM chatbot. web. with RAG
-### *~~This Repository is currently under work.</br>The source code is not completed.~~*
+### *~~This Repository is currently under work.</br>The source code is not completed.~~*   
 ### *This repository is temporarily suspended..*
 ![demo/screenshot.png](https://github.com/kreamsoup-SH/llm-chat-web-withRAG/blob/main/demo/screenshot.png)
 
