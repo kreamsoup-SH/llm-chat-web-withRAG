@@ -26,6 +26,9 @@ runtime\python.exe -m streamlit run webui.py
 - [ ] Redesign To-do list
 - [ ] complete webui-classic.py : 70%
 - [ ] complete webui-RAG.py : 50%
+- [ ] "model load" button to apply new configs
+- [ ] Fix the way to handle external data folder
+
 - [ ] create batch file for windows user
 - [ ] apply whisper to use STT
 - [ ] apply ViTS to use TTS
